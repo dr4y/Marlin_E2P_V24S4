@@ -1,6 +1,6 @@
 /**
  * Marlin 3D Printer Firmware
- * Copyright (c) 2020 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
+ * Copyright (c) 2024 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
  *
  * Based on Sprinter and grbl.
  * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
@@ -20,6 +20,8 @@
  *
  */
 #pragma once
+
+#define CONFIG_EXAMPLES_DIR "Creality/Ender-2 Pro/CrealityV24S4"
 
 /**
  * Configuration_adv.h
@@ -327,7 +329,7 @@
    * and/or decrease WATCH_TEMP_INCREASE. WATCH_TEMP_INCREASE should not be set
    * below 2.
    */
-  #define WATCH_TEMP_PERIOD  40               // (seconds)
+  #define WATCH_TEMP_PERIOD  20               // (seconds)
   #define WATCH_TEMP_INCREASE 2               // (°C)
 #endif
 
@@ -496,7 +498,7 @@
 
 // Show Temperature ADC value
 // Enable for M105 to include ADC values read from temperature sensors.
-//#define SHOW_TEMP_ADC_VALUES
+#define SHOW_TEMP_ADC_VALUES
 
 /**
  * High Temperature Thermistor Support
@@ -692,12 +694,12 @@
 #define CHAMBER_AUTO_FAN_PIN -1
 #define COOLER_AUTO_FAN_PIN -1
 
-#define EXTRUDER_AUTO_FAN_TEMPERATURE 50
-#define EXTRUDER_AUTO_FAN_SPEED 255   // 255 == full speed
-#define CHAMBER_AUTO_FAN_TEMPERATURE 30
-#define CHAMBER_AUTO_FAN_SPEED 255
-#define COOLER_AUTO_FAN_TEMPERATURE 18
-#define COOLER_AUTO_FAN_SPEED 255
+#define EXTRUDER_AUTO_FAN_TEMPERATURE  50
+#define EXTRUDER_AUTO_FAN_SPEED       255  // 255 == full speed
+#define CHAMBER_AUTO_FAN_TEMPERATURE   28
+#define CHAMBER_AUTO_FAN_SPEED        255
+#define COOLER_AUTO_FAN_TEMPERATURE    18
+#define COOLER_AUTO_FAN_SPEED         255
 
 /**
  * Hotend Cooling Fans tachometers
@@ -1253,8 +1255,12 @@
 #define DISABLE_IDLE_E    // Shut down all idle extruders
 
 // Default Minimum Feedrates for printing and travel moves
-#define DEFAULT_MINIMUMFEEDRATE       0.0     // (mm/s. °/s for rotational-only moves) Minimum feedrate. Set with M205 S.
-#define DEFAULT_MINTRAVELFEEDRATE     0.0     // (mm/s. °/s for rotational-only moves) Minimum travel feedrate. Set with M205 T.
+#define DEFAULT_MINIMUMFEEDRATE             0.0     // (mm/s) Minimum feedrate. Set with M205 S.
+#define DEFAULT_MINTRAVELFEEDRATE           0.0     // (mm/s) Minimum travel feedrate. Set with M205 T.
+#if HAS_ROTATIONAL_AXES
+  #define DEFAULT_ANGULAR_MINIMUMFEEDRATE   0.0     // (°/s) Minimum feedrate for rotational-only moves. Set with M205 P.
+  #define DEFAULT_ANGULAR_MINTRAVELFEEDRATE 0.0     // (°/s) Minimum travel feedrate for rotational-only moves. Set with M205 Q.
+#endif
 
 // Minimum time that a segment needs to take as the buffer gets emptied
 #define DEFAULT_MINSEGMENTTIME        20000   // (µs) Set with M205 B.
@@ -1529,7 +1535,7 @@
   #endif
 
   // Include a page of printer information in the LCD Main Menu
-  //#define LCD_INFO_MENU
+  #define LCD_INFO_MENU
   #if ENABLED(LCD_INFO_MENU)
     //#define LCD_PRINTER_INFO_IS_BOOTSCREEN // Show bootscreen(s) instead of Printer Info pages
   #endif
@@ -1585,12 +1591,12 @@
       //#define BOOT_MARLIN_LOGO_ANIMATED // Animated Marlin logo. Costs ~3260 (or ~940) bytes of flash.
     #endif
     #if ANY(HAS_MARLINUI_U8GLIB, TOUCH_UI_FTDI_EVE)
-      //#define SHOW_CUSTOM_BOOTSCREEN    // Show the bitmap in Marlin/_Bootscreen.h on startup.
+      #define SHOW_CUSTOM_BOOTSCREEN      // Show the bitmap in Marlin/_Bootscreen.h on startup.
     #endif
   #endif
 
   #if HAS_MARLINUI_U8GLIB
-    //#define CUSTOM_STATUS_SCREEN_IMAGE  // Show the bitmap in Marlin/_Statusscreen.h on the status screen.
+    #define CUSTOM_STATUS_SCREEN_IMAGE    // Show the bitmap in Marlin/_Statusscreen.h on the status screen.
   #endif
 
   //#define SOUND_MENU_ITEM   // Add a mute option to the LCD menu
@@ -1946,6 +1952,15 @@
 //#define NO_SD_HOST_DRIVE   // Disable SD Card access over USB (for security).
 
 /**
+ * By default the framework is responsible for the shared media I/O.
+ * Enable this if you need Marlin to take care of the shared media I/O.
+ * Useful if shared media isn't working properly on some boards.
+ */
+#if HAS_MEDIA && DISABLED(NO_SD_HOST_DRIVE)
+  //#define DISKIO_HOST_DRIVE
+#endif
+
+/**
  * Additional options for Graphical Displays
  *
  * Use the optimizations here to improve printing performance,
@@ -2290,8 +2305,12 @@
   //#define BABYSTEP_DISPLAY_TOTAL          // Display total babysteps since last G28
 
   //#define BABYSTEP_ZPROBE_OFFSET          // Combine M851 Z and Babystepping
-  #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
-    //#define BABYSTEP_HOTEND_Z_OFFSET      // For multiple hotends, babystep relative Z offsets
+  //#define BABYSTEP_GLOBAL_Z               // Combine M424 Z and Babystepping
+
+  #if ANY(BABYSTEP_ZPROBE_OFFSET, BABYSTEP_GLOBAL_Z)
+    #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
+      //#define BABYSTEP_HOTEND_Z_OFFSET    // For multiple hotends, babystep relative Z offsets
+    #endif
     //#define BABYSTEP_GFX_OVERLAY          // Enable graphical overlay on Z-offset editor
   #endif
 #endif
@@ -2496,9 +2515,9 @@
 //
 #define ARC_SUPPORT                   // Requires ~3226 bytes
 #if ENABLED(ARC_SUPPORT)
-  #define MIN_ARC_SEGMENT_MM      0.1 // (mm) Minimum length of each arc segment
+  #define MIN_ARC_SEGMENT_MM      1   // (mm) Minimum length of each arc segment
   #define MAX_ARC_SEGMENT_MM      1.0 // (mm) Maximum length of each arc segment
-  #define MIN_CIRCLE_SEGMENTS    72   // Minimum number of segments in a complete circle
+  #define MIN_CIRCLE_SEGMENTS    24   // Minimum number of segments in a complete circle
   //#define ARC_SEGMENTS_PER_SEC 50   // Use the feedrate to choose the segment length
   #define N_ARC_CORRECTION       25   // Number of interpolated segments between corrections
   //#define ARC_P_CIRCLES             // Enable the 'P' parameter to specify complete circles
@@ -2973,7 +2992,7 @@
 
   #if AXIS_IS_TMC_CONFIG(X)
     #define X_CURRENT       800        // (mA) RMS current. Multiply by 1.414 for peak current.
-    #define X_CURRENT_HOME  X_CURRENT  // (mA) RMS current for sensorless homing
+    #define X_CURRENT_HOME  X_CURRENT  // (mA) RMS current for homing. (Typically lower than *_CURRENT.)
     #define X_MICROSTEPS     16        // 0..256
     #define X_RSENSE          0.11     // Multiplied x1000 for TMC26X
     #define X_CHAIN_POS      -1        // -1..0: Not chained. 1: MCU MOSI connected. 2: Next in chain, ...
@@ -3182,6 +3201,13 @@
     //#define E7_INTERPOLATE true
     //#define E7_HOLD_MULTIPLIER 0.5
   #endif
+
+  /**
+   * Use the homing current for all probing. (e.g., Current may be reduced to the
+   * point where a collision makes the motor skip instead of damaging the bed,
+   * though this is unlikely to save delicate probes from being damaged.
+   */
+  //#define PROBING_USE_CURRENT_HOME
 
   // @section tmc/spi
 
@@ -3839,6 +3865,14 @@
  */
 //#define CNC_COORDINATE_SYSTEMS
 
+/**
+ * CNC Drilling Cycle - UNDER DEVELOPMENT
+ *
+ * Enables G81 to perform a drilling cycle.
+ * Currently only supports a single cycle, no G-code chaining.
+ */
+//#define CNC_DRILLING_CYCLE
+
 // @section security
 
 /**
@@ -3937,6 +3971,15 @@
 #endif
 
 /**
+ * Variables
+ *
+ * Define a variable from 100-115 with G-code like '#101=19.6'.
+ * A variable can then be used in a G-code expression like 'G0 X[#101+3]'.
+ * See https://gcodetutor.com/cnc-macro-programming/cnc-variables.html
+ */
+//#define GCODE_VARIABLES
+
+/**
  * Support for MeatPack G-code compression (https://github.com/scottmudge/OctoPrint-MeatPack)
  */
 //#define MEATPACK_ON_SERIAL_PORT_1
@@ -3978,6 +4021,7 @@
 #ifdef G0_FEEDRATE
   //#define VARIABLE_G0_FEEDRATE // The G0 feedrate is set by F in G0 motion mode
 #endif
+//#define G0_ANGULAR_FEEDRATE 2700 // (°/min)
 
 /**
  * Startup commands

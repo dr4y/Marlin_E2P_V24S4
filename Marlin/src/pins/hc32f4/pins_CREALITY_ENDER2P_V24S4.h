@@ -72,7 +72,7 @@
 // Servos
 //
 #ifndef SERVO0_PIN
-  #define SERVO0_PIN                        PB0   // BLTouch OUT *
+  #define SERVO0_PIN                        PB1   // BLTouch OUT *
 #endif
 
 //
@@ -80,10 +80,10 @@
 //
 #define X_STOP_PIN                          PA5
 #define Y_STOP_PIN                          PA6
-#define Z_STOP_PIN                          PB0   // BLTOUCH *
+#define Z_STOP_PIN                          PB2   // BLTOUCH *
 
 #ifndef Z_MIN_PROBE_PIN
-  #define Z_MIN_PROBE_PIN                   PB1   // BLTouch IN *
+  #define Z_MIN_PROBE_PIN                   PB2   // BLTouch IN *
 #endif
 
 //
@@ -218,5 +218,5 @@
   #define LCD_PINS_EN                EXP1_08_PIN
   #define LCD_PINS_D4                EXP1_06_PIN
 
-  #define KILL_PIN                   EXP1_04_PIN
+ // #define KILL_PIN                   EXP1_04_PIN
 #endif
